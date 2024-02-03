@@ -1,9 +1,9 @@
 # PDF Generator
-- genrator PDF dokumentů z webových stránek pomocí [Puppeteer](https://pptr.dev/).
+- Generate PDF documents from web pages using [Puppeteer](https://pptr.dev/).
 
-> *v hostu vubec neexistuje node_modules, zustava v image (bezpecnost). Je to umozneno tim ze domovska slozka aplikace je nadrazena slozce svc s kodem aplikace*
+> *In the host environment, there is no `node_modules` directory; it remains in the image (for security reasons). This is possible because the home directory of the application is superior to the `svc` directory containing the application code.*
 
-puvodni sources.list ktery je v nodejs18.slim:  
+The original `sources.list` that is in the `nodejs18.slim` image:
 ```
 # deb http://snapshot.debian.org/archive/debian/20221004T000000Z bullseye main
 deb http://deb.debian.org/debian bullseye main
@@ -13,18 +13,18 @@ deb http://deb.debian.org/debian-security bullseye-security main
 deb http://deb.debian.org/debian bullseye-updates main
 ```
 
-## Prostředky
-- Node.js, express.js
+## Resources
+- Node.js, Express.js
 - Google Chrome
 
-## Endpointy
-- **/** Generace PDF z jakékoliv URL.
-- **/tls/nosso/nemo/objednavky/***  Generace PDF z dané struktury
+## Endpoints
+- **/** Generate PDF from any URL.
+- **/tls/nosso/nemo/objednavky/***  Generate PDF from a specific structure.
 
 ## Docker Setup
-- K dispozici je Dockerfile pro stažení Google Chrome
-- K použití je docker-compose pro tvorbu kontejneru
+- A Dockerfile is available for downloading Google Chrome.
+- Use docker-compose to create the container.
 
-## Použití
-- Start Docker container: **docker-compose up dev**
-- Aplikace běží na : **http://localhost:8013**
+## Usage
+- Start the Docker container: **docker-compose up dev**
+- The application runs on: **http://localhost:8013**
