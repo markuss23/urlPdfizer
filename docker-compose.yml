@@ -1,0 +1,146 @@
+# adam.sida, 2022-05-10
+version: "3.5"
+
+services:
+
+  # nazev service kontejneru je jeho sitovym nazvem
+  # pro ostatni kontejnery ve stejne siti
+  # spustit pomoci docker-compose up -d pdfizer
+  pdfizer:
+    #kontejner se stavi z node 18 ale doinstalovava se tam chrome
+    image: "urlpdfizer"
+    build:
+      context: .
+      dockerfile: ./dockerfile
+      #args:
+    #always, no, unless-stopped
+    restart: "always"
+    container_name: "urlPdfizer4.0"
+    #pro create-react-app povolit user, jinak neni potreba
+    #user: "node"
+
+    #cesta na appku uvnitr image
+    working_dir: /home/node/app/svc
+
+    logging:
+      options:
+        #driver: "json-file"
+        max-size: "500k"
+        max-file: "2"
+
+    #nastavit si promenne prostredi, ktere budou dostupne v kontejneru
+    #pozor !! cra i vite vyzaduji u promenne prefix REACT_APP, resp VITE_
+    #cisty node a express toto omezeni nemaji
+    environment:
+      - NODE_ENV=production
+      #pupp nema PUBLIC_URL je host agnostic a bezi vsude
+      - PORT=8099
+
+    #namapovat cestu z hosta do kontejneru
+    volumes:
+      #aktualni slozka v hostu se namapuje do kontejneru do /home/...mojeAppka
+      - "./svc:/home/node/app/svc:rw"
+      # sync time with host!!
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      # pro nacteni uzivaku z hosta
+      - "/etc/passwd:/etc/passwd:ro"
+      - "/etc/shadow:/etc/shadow:ro"
+      - "/etc/group:/etc/group:ro"
+
+    ports:
+      - "8099:8099"
+
+    #je vice zpusobu jak pustit kontejner aby bezel trvale
+    #i kdyz v nem neni nainstalovana zadna aplikace
+    #nastavit entrypoint+stdin_open: true
+    entrypoint: [ "/bin/bash", "-c" ]
+
+    #sh -c nacita prikazy z textoveho retezce
+    command:
+      - |
+        #pro prvni spusteni dej spis bash service
+        #do takto spusteneho kontaku se pak da pripojit pomoci:
+        #docker exec -it idKontejenru /bin/bash
+        #/bin/bash
+        #az budou nainstalovane potrebne balicky tak pouzit
+        #npm i
+        npm run start
+        #npm run build
+
+    networks:
+      - default
+
+
+
+  #spustit pomoci docker-compose exec builder
+  #todo:tohle zatim nefunguje, nerozumim proc
+  builder:
+    # nodejs 18 slim postaveny na Linux debian bullseye
+    image: "urlpdfizer"
+    build:
+      context: .
+      dockerfile: ./dockerfile
+    #always, no
+    restart: "no"
+    container_name: "pdfizerBash"
+    #pro create-react-app povolit user, jinak neni potreba
+    #user: "node"
+
+    #cesta na appku uvnitr image
+    working_dir: /home/node/app
+
+    #nastavit si promenne prostredi, ktere budou dostupne v kontejneru
+    #pozor !! cra i vite vyzaduji u promenne prefix REACT_APP, resp VITE_
+    #cisty node a express toto omezeni nemaji
+    environment:
+      - NODE_ENV=production
+      #pro build zapoznamkovat PUBLIC_URL
+
+    #namapovat cestu z hosta do kontejneru
+    volumes:
+      #aktualni slozka v hostu se namapuje do kontejneru do /home/...mojeAppka
+      - ".:/home/node/app:rw"
+      # sync time with host!!
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      # pro nacteni uzivaku z hosta
+      - "/etc/passwd:/etc/passwd:ro"
+      - "/etc/shadow:/etc/shadow:ro"
+      - "/etc/group:/etc/group:ro"
+
+    #ports:
+    #  - "8100:8100"
+
+    #pustit pri prvnim pouziti image
+    #jakmile je projekt nastaveny tak oboje zapoznamkovat
+    stdin_open: true
+    tty: true
+
+    #je vice zpusobu jak pustit kontejner aby bezel trvale
+    #i kdyz v nem neni nainstalovana zadna aplikace
+    #nastavit entrypoint+stdin_open: true
+    entrypoint: [ "/bin/bash", "-c" ]
+
+    #sh -c nacita prikazy z textoveho retezce
+    command:
+      - |
+        #pro prvni spusteni dej bash
+        #do takto spusteneho kontaku se pak da pripojit pomoci:
+        #docker exec -it idKontejenru /bin/bash
+        /bin/bash
+        #az budou nainstalovane potrebne balicky tak pouzit
+        #npm run start
+        #npm run build
+
+    #networks:
+    #  - default
+
+
+
+#https://docs.docker.com/compose/networking/
+#docker service name is network dns name on this network
+networks:
+  default:
+    external:
+      name: #myNetwork
